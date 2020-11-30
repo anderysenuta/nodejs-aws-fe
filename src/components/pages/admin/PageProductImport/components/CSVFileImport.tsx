@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {makeStyles} from '@material-ui/core/styles';
 import Typography from "@material-ui/core/Typography";
-import axios from 'axios';
+import axios, {} from 'axios';
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -32,7 +32,11 @@ export default function CSVFileImport({url, title}: CSVFileImportProps) {
 
   const uploadFile = async (e: any) => {
       // Get the presigned URL
-      const TOKEN = localStorage.getItem('authorization_token');
+      const TOKEN = localStorage.getItem('authorization_token') || '';
+      const headers: any = {};
+      if (TOKEN.length) {
+        headers['Authorization'] = `Basic ${TOKEN}`;
+      }
 
       const response = await axios({
         method: 'GET',
@@ -40,13 +44,9 @@ export default function CSVFileImport({url, title}: CSVFileImportProps) {
         params: {
           name: encodeURIComponent(file.name)
         },
-        headers: {
-          Authorization: `Basic ${TOKEN}`
-        }
+        headers
       })
-      if (!TOKEN) {
-        delete response.headers.Authorization
-      }
+
       console.log('File to upload: ', file.name)
       console.log('Uploading to: ', response.data)
       const result = await fetch(response.data, {
@@ -64,7 +64,7 @@ export default function CSVFileImport({url, title}: CSVFileImportProps) {
         {title}
       </Typography>
       {!file ? (
-          <input type="file" onChange={onFileChange}/>
+        <input type="file" onChange={onFileChange}/>
       ) : (
         <div>
           <button onClick={removeFile}>Remove file</button>
